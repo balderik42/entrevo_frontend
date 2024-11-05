@@ -234,9 +234,13 @@ const AdminHome = () => {
                 <input type="file" id="image" accept="image/*" onChange={handleImageChange} />
               </div>
               <div className="form-group">
-                <label htmlFor="stock">Stock Status:</label>
-                <input type="text" id="stock" value={formData.stock} onChange={handleStockChange} placeholder="Enter stock status" />
-              </div>
+            <label htmlFor="stock">Stock Status:</label>
+            <select id="stock" value={formData.stock} onChange={handleStockChange}>
+              <option value="">Select Stock Status</option>
+              <option value="In Stock">In Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+            </select>
+          </div>
               <button type="submit" className="btn submit-btn">{isEditing ? 'Update Product' : 'Add Product'}</button>
               <button type="button" className="btn close-btn" onClick={handleClose}>Close</button>
             </form>
