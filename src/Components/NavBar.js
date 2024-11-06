@@ -2,22 +2,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './NavBar.css';
+import AddProduct from '../CustomButtons/AddProduct';
+import AddUser from '../CustomButtons/addUser';
 
+const URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const URL =  process.env.REACT_APP_API_URL || 'http://localhost:8000'
 const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [menuOpen, setMenuOpen] = useState(false);
- 
+  const [open, setOpen] = useState(false);
+  const [addUser, setAddUser] = useState(false);
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [products, setProducts] = useState([]); 
-  const [searchResults, setSearchResults] = useState([]); 
+  const [products, setProducts] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const menuRef = useRef(null);
-  const isAdminPage = location.pathname === '/admin';
+  const isAdminPage = ['/admin', '/admincategories', '/adminorders'].includes(location.pathname);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -35,7 +39,9 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
   }, []);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
-  
+  const openAddProduct = () => setOpen(true);
+  const openDialog = () => setAddUser(true);
+  const adminCategories = () => navigate('/admincategories');
   const toggleDropdown = () => setShowDropdown((prev) => !prev);
 
   const handleSearch = (e) => {
@@ -57,8 +63,9 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
     navigate(`/product/${productId}`);
     setSearchQuery('');
     setSearchResults([]);
-    setMenuOpen(false); 
+    setMenuOpen(false);
   };
+
   const handleClickOutside = (event) => {
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setMenuOpen(false);
@@ -75,7 +82,7 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
 
   return (
     <>
-      <nav className="navbar"  ref={menuRef} >
+      <nav className="navbar" ref={menuRef}>
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="navbar-logo">
             <img src="/LogoCart.png" alt="My Logo" className="logo-image" />
@@ -84,14 +91,14 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
         </Link>
 
         <div className={`navbar-search ${menuOpen ? 'active' : ''}`}>
-        <div className="search-input-wrapper">
-          <input
-            type="text"
-            placeholder={isAdminPage ? 'Search Admin products...' : 'Search products...'}
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-          <i className="fas fa-search search-icon"></i>
+          <div className="search-input-wrapper">
+            <input
+              type="text"
+              placeholder={isAdminPage ? 'Search Admin products...' : 'Search products...'}
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+            <i className="fas fa-search search-icon"></i>
           </div>
           {searchResults.length > 0 && (
             <div className="search-results">
@@ -113,8 +120,17 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
         </div>
 
         <div className={`navbar-buttons ${menuOpen ? 'active' : ''}`}>
-         
-        <button onClick={() => { navigate('/all-products'); toggleMenu(); }}>All Products</button>
+          {isAdminPage ? (
+            <>
+              <button onClick={() => { navigate('/admin'); toggleMenu(); }}>Admin Home</button>
+              <button onClick={adminCategories}>Categories</button>
+              <button onClick={openDialog}>Add User</button>
+              <button onClick={() => { navigate('/adminorders'); toggleMenu(); }}>All Orders</button>
+              <button onClick={openAddProduct}>Add Product</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => { navigate('/all-products'); toggleMenu(); }}>All Products</button>
               {isUserAuthenticated ? (
                 <div className="dropdown">
                   <button onClick={toggleDropdown}>
@@ -131,12 +147,13 @@ const NavBar = ({ isUserAuthenticated, handleUserLogout }) => {
               )}
               <button onClick={() => { navigate('/cart'); toggleMenu(); }}>Cart</button>
               <button onClick={() => { navigate('/allorders'); toggleMenu(); }}>All Orders</button>
-            
-         
+            </>
+          )}
         </div>
       </nav>
 
-      
+      <AddProduct open={open} setOpen={setOpen} />
+      {addUser && <AddUser addUser={addUser} setAddUser={setAddUser} />}
     </>
   );
 };
